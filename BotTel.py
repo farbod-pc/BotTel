@@ -4,7 +4,7 @@ from gtts import gTTS
 import datetime
 import os
 
-BOT_TOKEN = 'توکن خودت اینجا'
+BOT_TOKEN = '7869080937:AAGIC4et9wB0E2wGLfLfqFCMRVdet8_PyR8'
 
 translator = Translator()
 
