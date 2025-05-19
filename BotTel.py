@@ -1,48 +1,64 @@
-from telegram.ext import Updater, MessageHandler, Filters
-import logging
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+from telegram import File
+from googletrans import Translator
+import datetime
 
-BOT_TOKEN = '7869080937:AAGIC4et9wB0E2wGLfLfqFCMRVdet8_PyR8'
+BOT_TOKEN = 'توکن_ربات_اینجا'
 
-# فعال کردن لاگ برای دیباگ راحت‌تر
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+translator = Translator()
 
-def file_handler(update, context):
-    message = update.message
+# ⬅️ پیام خوش‌آمد هنگام استارت
+def start(update, context):
+    update.message.reply_text("سلام 👋\nبه ربات ترجمه خوش آمدید!\nمتنت رو بفرست تا برات ترجمه کنم.")
 
-    # بررسی نوع فایل
-    file_object = (
-        message.document or
-        message.video or
-        message.audio or
-        message.voice
-    )
+# ⬅️ ترجمه متن‌های ارسالی
+def translate_to_farsi(update, context):
+    user_message = update.message.text
+    user_id = update.message.from_user.id
+    username = update.message.from_user.username or "NoUsername"
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    if file_object:
-        file_id = file_object.file_id
-        file = context.bot.get_file(file_id)
-        file_link = file.file_path
+    # ذخیره پیام در فایل
+    with open("user_messages.txt", "a", encoding="utf-8") as f:
+        f.write(f"[{now}] ID:{user_id} Username:{username} Message: {user_message}\n")
 
-        update.message.reply_text(f"📥 لینک دانلود فایل:\n{file_link}")
+    try:
+        translated = translator.translate(user_message, dest='fa')
+        update.message.reply_text(f"📘 ترجمه:\n{translated.text}")
+    except Exception as e:
+        print(e)
+        update.message.reply_text("❌ خطا در ترجمه!")
+
+# ⬅️ ارسال لینک فایل
+def handle_files(update, context):
+    file = None
+
+    if update.message.document:
+        file = update.message.document
+    elif update.message.video:
+        file = update.message.video
+    elif update.message.audio:
+        file = update.message.audio
+    elif update.message.photo:
+        file = update.message.photo[-1]  # آخرین سایز (بزرگ‌ترین)
+
+    if file:
+        file_id = file.file_id
+        new_file = context.bot.get_file(file_id)
+        update.message.reply_text(f"📎 لینک فایل شما:\n{new_file.file_path}")
     else:
-        update.message.reply_text("❗ لطفاً یک فایل (ویدیو، صوتی یا سند) ارسال کنید.")
+        update.message.reply_text("❗فایل قابل پردازش نبود.")
 
-def start_handler(update, context):
-    update.message.reply_text("👋 سلام! لطفاً فایل خود را ارسال کنید تا لینک آن را دریافت کنید.")
-
+# ⬅️ اجرای اصلی ربات
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    # هندلر برای شروع /start
-    dp.add_handler(MessageHandler(Filters.command & Filters.regex('^/start$'), start_handler))
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, translate_to_farsi))
+    dp.add_handler(MessageHandler(Filters.document | Filters.video | Filters.audio | Filters.photo, handle_files))
 
-    # هندلر برای انواع فایل‌ها
-    dp.add_handler(MessageHandler(
-        Filters.document | Filters.video | Filters.audio | Filters.voice,
-        file_handler
-    ))
-
-    print("✅ ربات فعال شد.")
+    print("✅ ربات فعال شد...")
     updater.start_polling()
     updater.idle()
 
