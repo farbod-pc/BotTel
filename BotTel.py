@@ -3,7 +3,7 @@ from googletrans import Translator
 import datetime
 import logging
 
-BOT_TOKEN = 'توکن_ربات_اینجا'
+BOT_TOKEN = '7869080937:AAGIC4et9wB0E2wGLfLfqFCMRVdet8_PyR8'
 
 translator = Translator()
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
