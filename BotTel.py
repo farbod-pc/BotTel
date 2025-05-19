@@ -3,7 +3,7 @@ from telegram import File
 from googletrans import Translator
 import datetime
 
-BOT_TOKEN = 'توکن_ربات_اینجا'
+BOT_TOKEN = '7869080937:AAGIC4et9wB0E2wGLfLfqFCMRVdet8_PyR8'
 
 translator = Translator()
 
